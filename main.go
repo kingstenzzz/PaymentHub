@@ -42,7 +42,7 @@ func main() {
 	if protocol == "t" {
 		TURBO.Run(numNode, epoch, vNode)
 	} else if protocol == "n" {
-		nocust.Run(numNode, epoch)
+		Nocust.Run(numNode, epoch)
 	} else if protocol == "g" {
 		PayHub.Run(numNode, epoch)
 	}

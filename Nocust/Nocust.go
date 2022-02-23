@@ -1,4 +1,4 @@
-package nocust
+package Nocust
 
 import (
 	"context"

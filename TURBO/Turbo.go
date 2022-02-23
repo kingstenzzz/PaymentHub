@@ -686,7 +686,7 @@ func createNode(id int, balance int, validator bool) *userNode {
 	}
 }
 
-func TruboRun(n, e ,v int) int {
+func Run(n, e ,v int) int {
 	fmt.Println("Turbo...")
 
 	numNode = n
