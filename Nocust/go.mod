@@ -1,4 +1,4 @@
-module Nocust
+module  github.com/kingstenzzz/PaymentHub/Nocust
 
 go 1.16
 

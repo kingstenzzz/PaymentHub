@@ -1,4 +1,4 @@
-module PH
+module github.com/kingstenzzz/PaymentHub
 
 go 1.16
 
@@ -7,8 +7,9 @@ require (
 	github.com/wealdtech/go-merkletree v1.0.0
 	github.com/kingstenzzz/PaymentHub v1.0.0
 )
-
 replace (
 	github.com/kingstenzzz/PaymentHub v1.0.0 => ./
 )
+
+
 

@@ -1,4 +1,4 @@
-module TURBO
+module github.com/kingstenzzz/PaymentHub/TURBO
 
 go 1.16
 
