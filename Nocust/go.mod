@@ -7,4 +7,3 @@ require (
 	github.com/kingstenzzz/PaymentHub v1.0.0
 )
 
-replace github.com/kingstenzzz/PaymentHub v1.0.0 => ../
