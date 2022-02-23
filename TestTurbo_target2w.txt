@@ -1,0 +1,5 @@
+node:20,epoch:5,tps6815
+node:20,epoch:10,tps7086
+node:20,epoch:30,tps7378
+node:20,epoch:5,tps6737
+node:20,epoch:10,tps7158

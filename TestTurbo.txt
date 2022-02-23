@@ -1,0 +1,12 @@
+node:300,epoch:5,tps17053
+node:20,epoch:5,tps16102
+node:50,epoch:5,tps15647
+node:100,epoch:5,tps16358
+node:150,epoch:5,tps16120
+node:300,epoch:5,tps15727
+node:20,epoch:10,tps14750
+node:50,epoch:10,tps9757
+node:100,epoch:10,tps12681
+node:150,epoch:10,tps17561
+node:300,epoch:10,tps12759
+node:20,epoch:30,tps7668

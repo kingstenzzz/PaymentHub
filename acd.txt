@@ -1,0 +1,19 @@
+Turbo n=10 e=5 v=10 acd:1.1970469221
+Turbo n=10 e=10 v=10 acd:2.0998502109
+Turbo n=10 e=30 v=10 acd:5.7820919651
+Turbo n=50 e=5 v=50 acd:2.3444649764
+Turbo n=50 e=10 v=50 acd:4.4845504323
+Turbo n=50 e=30 v=50 cd:13.2944913129
+Turbo n=100 e=5 v=100 acd:3.8256091646
+Turbo n=100 e=10 v=100 acd:7.5795311706
+Turbo n=100 e=30 v=100 acd:22.5232832648
+Turbo n=200 e=5 v=200 acd:7.2772769328
+Turbo n=200 e=10 v=200 acd:13.6169593354
+Turbo n=200 e=30 v=200 acd:41.924788386
+Turbo n=500 e=5 v=500 acd:13.5852610593
+Turbo n=500 e=10 v=500 acd:28.2190887945
+Turbo n=500 e=30 v=500 acd:86.3859203349
+
+Turbo n=400 e=5 v=400
+，ISR27ea756359de9ad402b41bd84d0dc36a8e2eab657ed9c4d1cc09eacd61fd4232
+atps: 2883,acd:12.5872756676 

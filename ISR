@@ -1,0 +1,45 @@
+goos: windows
+goarch: amd64
+cpu: Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz
+BenchmarkISR
+BenchmarkISR/node20,tx100
+BenchmarkISR/node20,tx100-16         	     880	   1354601 ns/op	 1023236 B/op	   18002 allocs/op
+BenchmarkISR/node20,tx1000
+BenchmarkISR/node20,tx1000-16        	      91	  13566267 ns/op	10091849 B/op	  178776 allocs/op
+BenchmarkISR/node20,tx10000
+BenchmarkISR/node20,tx10000-16       	       8	 140125275 ns/op	102247326 B/op	 1815218 allocs/op
+BenchmarkISR/node20,tx100000
+BenchmarkISR/node20,tx100000-16      	       1	1641861400 ns/op	1014968800 B/op	18023981 allocs/op
+BenchmarkISR/node50,tx100
+BenchmarkISR/node50,tx100-16         	     459	   2592903 ns/op	 1901298 B/op	   33960 allocs/op
+BenchmarkISR/node50,tx1000
+BenchmarkISR/node50,tx1000-16        	      48	  25770429 ns/op	18789173 B/op	  336934 allocs/op
+BenchmarkISR/node50,tx10000
+BenchmarkISR/node50,tx10000-16       	       4	 261755975 ns/op	189136830 B/op	 3395376 allocs/op
+BenchmarkISR/node50,tx100000
+BenchmarkISR/node50,tx100000-16      	       1	2735431000 ns/op	1883781832 B/op	33824150 allocs/op
+BenchmarkISR/node100,tx100
+BenchmarkISR/node100,tx100-16        	     243	   4941446 ns/op	 3614190 B/op	   64866 allocs/op
+BenchmarkISR/node100,tx1000
+BenchmarkISR/node100,tx1000-16       	      24	  48972200 ns/op	35751681 B/op	  643240 allocs/op
+BenchmarkISR/node100,tx10000
+BenchmarkISR/node100,tx10000-16      	       3	 507517500 ns/op	358596882 B/op	 6455692 allocs/op
+BenchmarkISR/node100,tx100000
+BenchmarkISR/node100,tx100000-16     	       1	5463610100 ns/op	3578203792 B/op	64424459 allocs/op
+BenchmarkISR/node150,tx100
+BenchmarkISR/node150,tx100-16        	     132	   9061492 ns/op	 6776177 B/op	  121628 allocs/op
+BenchmarkISR/node150,tx1000
+BenchmarkISR/node150,tx1000-16       	      13	  88113477 ns/op	67065840 B/op	 1205803 allocs/op
+BenchmarkISR/node150,tx10000
+BenchmarkISR/node150,tx10000-16      	       2	 906024350 ns/op	671432328 B/op	12076263 allocs/op
+BenchmarkISR/node150,tx100000
+BenchmarkISR/node150,tx100000-16     	       1	9911064100 ns/op	6706248040 B/op	120625059 allocs/op
+BenchmarkISR/node300,tx100
+BenchmarkISR/node300,tx100-16        	      66	  17335233 ns/op	13350109 B/op	  240202 allocs/op
+BenchmarkISR/node300,tx1000
+BenchmarkISR/node300,tx1000-16       	       6	 172170117 ns/op	132175865 B/op	 2380978 allocs/op
+BenchmarkISR/node300,tx10000
+BenchmarkISR/node300,tx10000-16      	       1	1850854200 ns/op	1321902568 B/op	23817429 allocs/op
+BenchmarkISR/node300,tx100000
+BenchmarkISR/node300,tx100000-16     	       1	19714841500 ns/op	13210339784 B/op	238026372 allocs/op
+

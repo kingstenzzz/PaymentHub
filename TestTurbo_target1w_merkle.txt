@@ -1,0 +1,40 @@
+Trubo n=10 e=5
+atps=81396,acd=1.188340929, epochTime=6.115096827,calculateDuration:787.008812ms,tradingPhaseDuration:4.999185822s
+Trubo n=10 e=10
+atps=86772,acd=2.1952055244, epochTime=11.875262734,calculateDuration:1.547068604s,tradingPhaseDuration:9.997181548s
+Trubo n=10 e=30
+atps=89666,acd=5.6718523824, epochTime=35.236429326,calculateDuration:4.882115608s,tradingPhaseDuration:29.989643307s
+Trubo n=50 e=5
+atps=69174,acd=2.3349386317, epochTime=7.158738823,calculateDuration:1.824569089s,tradingPhaseDuration:4.999075263s
+Trubo n=50 e=10
+atps=72215,acd=4.5107882295, epochTime=14.160201503,calculateDuration:3.842974776s,tradingPhaseDuration:9.997396833s
+Trubo n=50 e=30
+atps=74285,acd=13.1317999453, epochTime=41.913741405,calculateDuration:11.590792341s,tradingPhaseDuration:29.989859327s
+Trubo n=100 e=5
+atps=57325,acd=-9.223372002252494e+08, epochTime=8.514944919,calculateDuration:3.169775005s,tradingPhaseDuration:4.998800282s
+Trubo n=100 e=10
+atps=59760,acd=8.080437472, epochTime=16.842891237,calculateDuration:6.520154723s,tradingPhaseDuration:9.996561724s
+Trubo n=100 e=30
+atps=61397,acd=22.2663203857, epochTime=50.331113737,calculateDuration:20.01472863s,tradingPhaseDuration:29.989256148s
+Trubo n=200 e=5
+atps=43113,acd=7.2859711719, epochTime=11.267459181,calculateDuration:5.923855847s,tradingPhaseDuration:4.998592474s
+Trubo n=200 e=10
+atps=44192,acd=13.6402778609, epochTime=22.66471287,calculateDuration:12.342317253s,tradingPhaseDuration:9.99758381s
+Trubo n=200 e=30
+atps=44981,acd=-9.223371696123102e+08, epochTime=68.652081308,calculateDuration:38.339546861s,tradingPhaseDuration:29.989470393s
+Trubo n=600 e=5
+atps=18440,acd=21.6797587639, epochTime=24.711128413,calculateDuration:19.354990675s,tradingPhaseDuration:4.998830034s
+Trubo n=600 e=10
+atps=18772,acd=44.3592270403, epochTime=50.356263715,calculateDuration:40.018231342s,tradingPhaseDuration:9.997070949s
+Trubo n=600 e=30
+atps=18654,acd=137.7587476276, epochTime=157.627986317,calculateDuration:2m7.313472063s,tradingPhaseDuration:29.992269534s
+Trubo n=10 e=60
+atps=89800,acd=11.3912017388, epochTime=70.351168687,calculateDuration:10.020511413s,tradingPhaseDuration:59.978314938s
+Trubo n=50 e=60
+atps=75156,acd=25.7071793659, epochTime=83.582951255,calculateDuration:23.244640583s,tradingPhaseDuration:59.978596087s
+Trubo n=100 e=60
+atps=60972,acd=45.449219413, epochTime=101.857888515,calculateDuration:41.515825065s,tradingPhaseDuration:59.979314938s
+Trubo n=200 e=60
+atps=44719,acd=83.9541604921, epochTime=137.066016887,calculateDuration:1m16.753387421s,tradingPhaseDuration:59.980288754s
+Trubo n=600 e=60
+atps=18504,acd=279.8730244585, epochTime=314.982336986,calculateDuration:4m14.624524131s,tradingPhaseDuration:59.982652839s
