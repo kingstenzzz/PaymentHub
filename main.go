@@ -18,20 +18,14 @@ var vNode int
 var protocol string
 
 func init() {
-	flag.IntVar(&numNode, "n", 1000, "number of nodes")
+	flag.IntVar(&numNode, "n", 20, "number of nodes")
 	flag.IntVar(&epoch, "e", 10, "epoch in seconds")
 	flag.IntVar(&vNode, "vs", 10, "number of v")
-	flag.StringVar(&protocol, "p", "n", "protocol")
+	flag.StringVar(&protocol, "p", "t", "protocol")
 	flag.Parse()
 }
 
 func main() {
-	//runtime.GOMAXPROCS(7)
-
-	//go func() {
-	//	http.ListenAndServe("localhost:6060", nil)
-	//}()
-	//ethVerify()
 	fmt.Println("numNode: ", numNode)
 	fmt.Println("epoch: ", epoch)
 	fmt.Println("")

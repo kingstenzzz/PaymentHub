@@ -1,14 +1,15 @@
 package TURBO
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/google/uuid"
 	"github.com/kingstenzzz/PaymentHub/Utils"
 	merkletree "github.com/wealdtech/go-merkletree"
 	"math"
@@ -31,7 +32,7 @@ var targetTPS int
 
 var tradingPhaseSecond int
 
-var confNum = 20
+var confNum = 10
 
 type Stat struct {
 	tradingPhaseStartTime   time.Time
@@ -60,9 +61,9 @@ type Tx struct {
 	LeaderSig   string
 	SenderSig   string
 	ReceiverSig string
-
-	startTime time.Time
-	duration  time.Duration
+	Nonce       string
+	startTime   time.Time
+	duration    time.Duration
 }
 
 type userNode struct {
@@ -75,11 +76,9 @@ type userNode struct {
 	priKey    *ecdsa.PrivateKey
 	pubAddr   string
 
-	txIdRequestChan chan TxIdRequest
-	txIdReplyChan   chan TxIdRequest
-	//txRequestChan   chan Tx
-	//txReplyChan     chan Tx
-	txLeaderChan chan Tx //发给leader
+	txRequestChan chan Tx
+	txReplyChan   chan Tx
+	//	txLeaderChan    chan Tx //发给leader
 
 	newStateEpochChan      chan State
 	newStateEpochReplyChan chan StateSig
@@ -91,14 +90,15 @@ type userNode struct {
 }
 
 type CheckPoint struct {
-	Epoch             int
-	LeaderId          int
-	LeaderAddr        string
-	PaymentRoot       []byte
-	IntervalStateRoot []byte
-	FinalStateRoot    []byte
-	withdrawalRoot    []byte
-	Sig               map[int]string
+	Epoch              int
+	LeaderId           int
+	LeaderAddr         string
+	PaymentRoot        []byte
+	ExecutionStateRoot []byte
+	FinalStateRoot     []byte
+	withdrawalRoot     []byte
+	Sig                map[int]string
+	LeaderSig          string
 }
 
 type Validator struct {
@@ -117,24 +117,14 @@ type Leader struct {
 }
 
 func (node *userNode) cleanUp() {
-	for i := len(node.txIdRequestChan); i > 0; i = len(node.txIdRequestChan) {
-		<-node.txIdRequestChan
-	}
-	for i := len(node.txIdReplyChan); i > 0; i = len(node.txIdReplyChan) {
-		<-node.txIdReplyChan
-	}
-	/*
-		for i := len(node.txRequestChan); i > 0; i = len(node.txRequestChan) {
-			<-node.txRequestChan
-		}
-		for i := len(node.txReplyChan); i > 0; i = len(node.txReplyChan) {
-			<-node.txReplyChan
-		}
-	*/
 
-	for i := len(node.txLeaderChan); i > 0; i = len(node.txLeaderChan) {
-		<-node.txLeaderChan
+	for i := len(node.txRequestChan); i > 0; i = len(node.txRequestChan) {
+		<-node.txRequestChan
 	}
+	for i := len(node.txReplyChan); i > 0; i = len(node.txReplyChan) {
+		<-node.txReplyChan
+	}
+
 }
 
 func (node *userNode) Run(initState State) {
@@ -158,13 +148,16 @@ func (node *userNode) Run(initState State) {
 				case <-node.taskChan:
 					go func() {
 						txStartTime := time.Now()
-						txId, leaderSig, err := node.getTxId(ctx)
-						if err != nil {
-							return
-						}
-						node.senderTx(ctx, txId, leaderSig, txStartTime)
+						node.senderTx(ctx, txStartTime)
 
 					}()
+				case tx := <-node.txReplyChan:
+					tx.duration = time.Since(tx.startTime)
+					stat.txLatency = append(stat.txLatency, tx.duration.Milliseconds())
+					stat.txDuration += tx.duration.Milliseconds()
+					//txb, _ := json.Marshal(tx)
+					//fmt.Println(string(txb))
+
 				}
 			}
 		}()
@@ -239,32 +232,26 @@ func (node *userNode) getRandomNode() int {
 	return 0
 }
 
-func (node *userNode) getTxId(ctx context.Context) (int, string, error) {
-	txIdRequest := TxIdRequest{
-		nodeId:  node.id,
-		num:     1,
-		idList:  make([]int, 1),
-		sigList: make([]string, 1),
+func (node *userNode) generateNonce() string {
+	uuid, err := uuid.NewRandom()
+
+	if err != nil {
+		return ""
 	}
-	go node.sendTxIdRequest(ctx, node.state.LeaderId, txIdRequest)
-	select {
-	case <-ctx.Done():
-		return 0, "", errors.New("")
-	case txIdReply := <-node.txIdReplyChan:
-		return txIdReply.idList[0], txIdReply.sigList[0], nil
-	}
+	nonce := uuid.String()
+	return nonce
 }
 
-func (node *userNode) senderTx(ctx context.Context, txid int, leaderSig string, txStartTime time.Time) {
+func (node *userNode) senderTx(ctx context.Context, txStartTime time.Time) {
 	tx := Tx{
-		Id:        txid,
 		Epoch:     node.state.Epoch,
 		Sender:    node.id,
 		Receiver:  node.getRandomNode(),
 		Amount:    1,
-		LeaderSig: leaderSig,
 		startTime: txStartTime,
 	}
+	nonce := node.generateNonce()
+	tx.Nonce = nonce
 	tx.SenderSig = node.sign(tx)
 	node.sendTxLeader(ctx, node.state.LeaderId, tx) //send to leader
 	/*
@@ -304,7 +291,6 @@ type State struct {
 	LeaderId      int
 	LeaderAddr    string
 	Balance       map[int]int
-	Sig           map[int]string
 	enrollmentSet map[int]int
 	withdrawalSet []int
 	txSet         []Tx
@@ -324,19 +310,21 @@ func printState(state State) {
 
 func calculateNextState(state State, txSet []Tx, enrollmentSet map[int]int, withdrawalSet []int) State {
 	newState := State{
-		Epoch:   state.Epoch + 1,
-		Balance: make(map[int]int),
-		Sig:     make(map[int]string),
+		Epoch:    state.Epoch + 1,
+		Balance:  make(map[int]int),
+		LeaderId: state.LeaderId,
 	}
+	newState.checkpoint.Sig = make(map[int]string)
+
 	for k, v := range state.Balance {
 		newState.Balance[k] = v
 	}
 	for k, v := range enrollmentSet {
 		newState.Balance[k] = v
 	}
+	newState.txSet = txSet
 	txCounter := make(map[int]int)
 	nextLeaderCounter := 0
-	nextLeaderId := state.LeaderId
 	finishedTask = len(txSet)
 	fmt.Printf("Epoch: %v, leader %v, finishTask: %v\n", state.Epoch, state.LeaderId, finishedTask)
 	SRL := make([][]byte, finishedTask+1)
@@ -357,7 +345,6 @@ func calculateNextState(state State, txSet []Tx, enrollmentSet map[int]int, with
 			//tx.Amount, newState.Balance[tx.Sender], tx.Epoch, state.Epoch)
 			os.Exit(-1)
 		}
-
 		newState.Balance[tx.Sender] -= tx.Amount
 		balancebyte, _ := Utils.Encode(newState.Balance[tx.Sender])
 		balanceByte[tx.Sender] = balancebyte
@@ -368,31 +355,18 @@ func calculateNextState(state State, txSet []Tx, enrollmentSet map[int]int, with
 		txCounter[tx.Sender]++
 		if txCounter[tx.Sender] > nextLeaderCounter {
 			nextLeaderCounter = txCounter[tx.Sender]
-			nextLeaderId = tx.Sender
 		}
 		txbyte, _ := Utils.Encode(tx)
-		txSetByte = append(txSetByte, txbyte)
-
-		//txCounter[tx.Receiver]++
-		//if txCounter[tx.Receiver] > nextLeaderCounter {
-		//	nextLeaderCounter = txCounter[tx.Receiver]
-		//	nextLeaderId = tx.Receiver
-		//}
-
-		/*
-			for i, balance := range newState.Balance {
-				balancebyte, _ := Utils.Encode(balance)
-				balanceByte[i] =balancebyte
-			}
-		*/
+		//txSetByte = append(txSetByte, txbyte)
+		txSetByte[i] = txbyte
 		BatchBalanceByte[i] = balanceByte
-
 	}
 
 	var wg sync.WaitGroup //定义一个同步等待的组
 
-	cpuNum := 24
+	cpuNum := 8
 	fmt.Printf("cpu:%v", cpuNum)
+	ISRL := make([][]byte, finishedTask)
 
 	for i := 1; i < cpuNum; i++ {
 		wg.Add(1)
@@ -401,6 +375,14 @@ func calculateNextState(state State, txSet []Tx, enrollmentSet map[int]int, with
 				SR2tree, _ := merkletree.New(BatchBalanceByte[j])
 				SR2 := SR2tree.Root()
 				SRL[j] = SR2
+				if j >= 1 {
+					var buffer bytes.Buffer
+					buffer.Write(SRL[j-1])
+					buffer.Write(SRL[j])
+					buffer.Write(txSetByte[j-1])
+					ISByte := sha256.New().Sum(buffer.Bytes())
+					ISRL[i] = ISByte //添加过程根
+				}
 			}
 			wg.Done()
 
@@ -409,27 +391,28 @@ func calculateNextState(state State, txSet []Tx, enrollmentSet map[int]int, with
 	}
 
 	wg.Wait() //阻塞直到所有任务完成
-	fmt.Println("over\n")
-	ISRL := make([][]byte, finishedTask)
-	for i := 0; i < finishedTask-1; i++ {
-		IS := sha256.New()
-		IS.Write(SRL[i])
-		IS.Sum(SRL[i+1])
-		ISByte := IS.Sum(txSetByte[i])
-		ISRL[i] = ISByte //添加过程根
-	}
+	fmt.Println("over")
+	/*
+		for i := 0; i < finishedTask-1; i++ {
+			IS := sha256.New()
+			IS.Write(SRL[i])
+			IS.Sum(SRL[i+1])
+			ISByte := IS.Sum(txSetByte[i])
+			ISRL[i] = ISByte //添加过程根
+		}
+
+	*/
 	ISRtree, _ := merkletree.New(ISRL)
 	txSetTree, _ := merkletree.New(txSetByte)
 	if finishedTask != 0 {
 		newState.checkpoint.PaymentRoot = txSetTree.Root()
 		newState.checkpoint.FinalStateRoot = SRL[finishedTask-1]
-		newState.checkpoint.IntervalStateRoot = ISRtree.Root()
-
+		newState.checkpoint.ExecutionStateRoot = ISRtree.Root()
 		newState.checkpoint.LeaderId = newState.LeaderId
 		newState.checkpoint.Epoch = newState.Epoch
-		fmt.Printf("paymentRoot%x\n，ISR%x\n,StateRoot%x\n", newState.checkpoint.PaymentRoot, newState.checkpoint.IntervalStateRoot, newState.checkpoint.FinalStateRoot)
-
-		newState.LeaderId = nextLeaderId
+		//CPB, _ := json.Marshal(newState)
+		//fmt.Println(string(CPB))
+		//newState.LeaderId = nextLeaderId
 		for _, nodeId := range withdrawalSet {
 			delete(newState.Balance, nodeId)
 		}
@@ -478,21 +461,13 @@ func (node *userNode) leaderCron(ctx context.Context) {
 		case <-ctx.Done():
 			node.leaderConsensusPhase()
 			return
-		case txIdRequest := <-node.txIdRequestChan:
-			for i := 0; i < txIdRequest.num; i++ {
-				txId := node.leader.txIdGenerator[txIdRequest.nodeId]
-				node.leader.txIdGenerator[txIdRequest.nodeId]++
-				txIdRequest.idList[i] = txId
-				txIdRequest.sigList[i] = node.signTxid(txIdRequest.nodeId, txId)
-			}
-			go node.sendTxIdReply(ctx, txIdRequest.nodeId, txIdRequest)
-		case tx := <-node.txLeaderChan:
+		case tx := <-node.txRequestChan:
 			if tx.Epoch == node.state.Epoch {
-				tx.duration = time.Since(tx.startTime)
 				stat.txCount++
-				stat.txLatency = append(stat.txLatency, tx.duration.Milliseconds())
-				stat.txDuration += tx.duration.Milliseconds()
+				tx.Id = int(stat.txCount)
 				node.leader.txSet = append(node.leader.txSet, tx)
+				go node.sendTxReply(ctx, tx.Receiver, tx)
+
 			} else {
 				fmt.Printf("leader %v phase %v, discarding tx from Epoch %v\n", node.id, node.state.Epoch, tx.Epoch) //不是这轮的交易
 			}
@@ -505,16 +480,16 @@ func (node *userNode) leaderConsensusPhase() {
 	stat.tradingPhaseDuration = time.Since(stat.tradingPhaseStartTime)
 	stat.consensusPhaseStartTime = time.Now()
 
-	for i := len(node.txLeaderChan); i > 0; i = len(node.txLeaderChan) {
-		<-node.txLeaderChan
+	for i := len(node.txRequestChan); i > 0; i = len(node.txRequestChan) {
+		<-node.txRequestChan
 	}
 	if node.leader.txSet != nil {
 		calculiStetTime := time.Now()
 		newState := calculateNextState(node.state, node.leader.txSet,
 			node.leader.enrollmentSet, node.leader.withdrawalSet)
 		stat.calculateDuration = time.Since(calculiStetTime)
-		newState.Sig[node.id] = node.sign(newState.Balance)
-		newState.LeaderAddr = node.pubAddr
+		newState.checkpoint.LeaderSig = node.sign(newState.checkpoint)
+		newState.checkpoint.LeaderAddr = node.pubAddr
 		//printState(newState)
 		//for _,tx :=range node.leader.txSet{
 		//	fmt.Printf("id:%v,sender:%v.receiver:%v\n",tx.Id,tx.Sender,tx.Receiver)
@@ -531,11 +506,13 @@ func (node *userNode) leaderConsensusPhase() {
 			count++
 			stateSig := <-node.newStateEpochReplyChan
 			//fmt.Printf("vote from userNode %v\n", stateSig.NodeId)
-			newState.Sig[stateSig.NodeId] = stateSig.Sig
+			newState.checkpoint.Sig[stateSig.NodeId] = stateSig.Sig
 			if count >= confNum {
 				break
 			}
 		}
+		CPB, _ := json.Marshal(newState.checkpoint)
+		fmt.Println(string(CPB))
 		for nodeId := range nodesMap {
 			//if nodesMap[nodeId].validator {
 			go node.sendNewStateConfirm(context.TODO(), nodeId, newState)
@@ -569,34 +546,6 @@ type TxIdRequest struct {
 	sigList []string
 }
 
-func (node *userNode) sendTxIdRequest(ctx context.Context, to int, txIdRequest TxIdRequest) {
-	bytes := Utils.CountBytes(txIdRequest)
-	Utils.NetworkDelay(bytes)
-	select {
-	case <-ctx.Done():
-		return
-	default:
-		//fmt.Printf("node %v Epoch %v sendTxIdRequest %v\n", node.id, node.state.Epoch, txIdRequest)
-		stat.tradingPhaseMsgCount++
-		stat.tradingPhaseDataSize += bytes
-		nodesMap[to].txIdRequestChan <- txIdRequest
-	}
-}
-
-func (node *userNode) sendTxIdReply(ctx context.Context, to int, txIdRequest TxIdRequest) {
-	bytes := Utils.CountBytes(txIdRequest)
-	Utils.NetworkDelay(bytes)
-	select {
-	case <-ctx.Done():
-		return
-	default:
-		//fmt.Printf("node %v Epoch %v sendTxIdReply %v\n", node.id, node.state.Epoch, txIdRequest)
-		stat.tradingPhaseMsgCount++
-		stat.tradingPhaseDataSize += bytes
-		nodesMap[to].txIdReplyChan <- txIdRequest
-	}
-}
-
 func (node *userNode) sendTxRequest(ctx context.Context, to int, tx Tx) {
 	bytes := Utils.CountBytes(tx)
 	Utils.NetworkDelay(bytes)
@@ -607,13 +556,15 @@ func (node *userNode) sendTxRequest(ctx context.Context, to int, tx Tx) {
 		//fmt.Printf("node %v Epoch %v sendTxRequest %v\n", node.id, node.state.Epoch, tx)
 		stat.tradingPhaseMsgCount++
 		stat.tradingPhaseDataSize += bytes
-		//nodesMap[to].txRequestChan <- tx
+		nodesMap[to].txRequestChan <- tx
 	}
 }
 
 func (node *userNode) sendTxReply(ctx context.Context, to int, tx Tx) {
 	bytes := Utils.CountBytes(tx)
 	Utils.NetworkDelay(bytes)
+	tx.Nonce = node.generateNonce()
+	tx.LeaderSig = node.sign(tx)
 	select {
 	case <-ctx.Done():
 		return
@@ -621,7 +572,7 @@ func (node *userNode) sendTxReply(ctx context.Context, to int, tx Tx) {
 		//fmt.Printf("node %v Epoch %v sendTxReply %v\n", node.id, node.state.Epoch, tx)
 		stat.tradingPhaseMsgCount++
 		stat.tradingPhaseDataSize += bytes
-		//nodesMap[to].txReplyChan <- tx
+		nodesMap[to].txReplyChan <- tx
 	}
 }
 
@@ -635,7 +586,7 @@ func (node *userNode) sendTxLeader(ctx context.Context, to int, tx Tx) {
 		//fmt.Printf("node %v Epoch %v sendTxLeader %v\n", node.id, node.state.Epoch, tx)
 		stat.tradingPhaseMsgCount++
 		stat.tradingPhaseDataSize += bytes
-		nodesMap[to].txLeaderChan <- tx
+		nodesMap[to].txRequestChan <- tx
 	}
 }
 
@@ -689,15 +640,14 @@ func createNode(id int, balance int, validator bool) *userNode {
 		os.Exit(1)
 	}
 	return &userNode{
-		id:              id,
-		balance:         balance,
-		priKey:          key,
-		pubAddr:         crypto.PubkeyToAddress(key.PublicKey).Hex(),
-		txIdRequestChan: make(chan TxIdRequest, targetTPS),
-		txIdReplyChan:   make(chan TxIdRequest, targetTPS),
-		//txRequestChan:       make(chan Tx, targetTPS),
-		//txReplyChan:         make(chan Tx, targetTPS),
-		txLeaderChan:           make(chan Tx, targetTPS),
+		id:      id,
+		balance: balance,
+		priKey:  key,
+		pubAddr: crypto.PubkeyToAddress(key.PublicKey).Hex(),
+		//txIdRequestChan: make(chan TxIdRequest, targetTPS),
+		//txIdReplyChan:   make(chan TxIdRequest, targetTPS),
+		txRequestChan:          make(chan Tx, targetTPS),
+		txReplyChan:            make(chan Tx, targetTPS),
 		newStateEpochChan:      make(chan State, 1),
 		newStateEpochReplyChan: make(chan StateSig, numNode),
 		newStateConfirmChan:    make(chan State, 1),
@@ -707,12 +657,12 @@ func createNode(id int, balance int, validator bool) *userNode {
 }
 
 func Run(n, e, v int) int {
-	fmt.Println("Turbo...")
+	fmt.Println("Turbo1014...")
 
 	numNode = n
 	initBalance = 20000
 	tradingPhaseSecond = e
-	targetTPS = 10000 //9000
+	targetTPS = 100 //9000
 	tpsPerNode := targetTPS / numNode
 	tps := 0
 	confNum = v
@@ -756,8 +706,8 @@ func Run(n, e, v int) int {
 
 		}
 		<-makeTaskChan
-		epochTime = float64(time.Since(startTime).Seconds())
-		currentTps := int(float64(finishedTask) / float64(time.Since(startTime).Seconds()))
+		epochTime = time.Since(startTime).Seconds()
+		currentTps := int(float64(finishedTask) / time.Since(startTime).Seconds())
 		if i >= 1 {
 			tps += currentTps
 		}
@@ -766,7 +716,7 @@ func Run(n, e, v int) int {
 			consensDuration += stat.consensusPhaseDuration
 
 		}
-		fmt.Printf("\ntps: %d\n", int(float64(finishedTask)/float64(time.Since(startTime).Seconds())))
+		fmt.Printf("\ntps: %d\n", int(float64(finishedTask)/time.Since(startTime).Seconds()))
 	}
 	fmt.Printf("atps=%d acd=%v epochTime=%v calculateDuration:%v tradingPhaseDuration:%v\n",
 		tps/10, float64(consensDuration)/math.Pow(10, 10), epochTime, stat.calculateDuration, stat.tradingPhaseDuration)
