@@ -1,20 +1,25 @@
 package main
 
 import (
-	"/github.com/kingstenzzz/PaymentHub/Turbo"
 	"bytes"
 	"crypto/sha256"
 	_ "crypto/sha256"
 	"encoding/gob"
 	"fmt"
+	"github.com/kingstenzzz/PaymentHub/TURBO"
 	"github.com/kingstenzzz/PaymentHub/Utils"
+	merkle "github.com/vocdoni/arbo"
 	merkletree "github.com/wealdtech/go-merkletree"
+	"go.vocdoni.io/dvote/db"
+	"go.vocdoni.io/dvote/db/badgerdb"
+	"log"
+	"runtime"
 	"strconv"
 	"testing"
 )
 
-var txNum = []int{ /*100, 1000, 10000,*/ 1}
-var nodeNum = []int{ /*20, 50, 100, 150,*/ 300}
+var txNum = []int{ 10000, 50000, 100000, 2000000}
+var nodeNum = []int{/*20, 50, 100, 150,*/100}
 
 func Encode(data interface{}) ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
@@ -49,11 +54,11 @@ func TestMMerkle(t *testing.T) {
 	fmt.Printf("ROOT%X\nlen:%v\n", ROOT, len(txsetByte))
 
 	baz := txsetByte[5]
-	proof, err := tree.GenerateProof(baz, 0)
+	proof, err := tree.GenerateProof(baz)
 	if err != nil {
 		panic(err)
 	}
-	verified, err := merkletree.VerifyProof(baz, false, proof, [][]byte{ROOT})
+	verified, err := merkletree.VerifyProof(baz, proof, ROOT)
 	if err != nil {
 		panic(err)
 	}
@@ -120,6 +125,11 @@ func benchmarkISR(b *testing.B, txNum int, nodeNum int) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
+		maxProces := runtime.NumCPU()
+		if maxProces > 1 {
+			maxProces -= 1
+		}
+		runtime.GOMAXPROCS(maxProces)
 		ISRTest(txNum, nodeNum)
 	}
 }
@@ -130,8 +140,10 @@ func BenchmarkISR(b *testing.B) {
 			b.Run("node"+strconv.Itoa(nodenum)+",tx"+strconv.Itoa(txnum), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					b.ReportAllocs()
+					//b.RunParallel()
 					//b.ResetTimer()
 					ISRTest(txnum, nodenum)
+					//FastMerkle(txnum,nodenum)
 				}
 			})
 
@@ -140,57 +152,73 @@ func BenchmarkISR(b *testing.B) {
 	}
 }
 
-/*
-func TestMerkle(t *testing.T) {
-	numTx := 100000
-	c := qt.New(t)
-	database, err := badgerdb.New(db.Options{Path: c.TempDir()})
-	c.Assert(err, qt.IsNil)
-
-	tree, err := merkle.NewTree(merkle.Config{database, 256, merkle.DefaultThresholdNLeafs,
-		merkle.HashFunctionBlake2b})
-	c.Assert(err, qt.IsNil)
+func FastMerkle(numTx, nodeNum int) {
+	database, _ := badgerdb.New(db.Options{Path:"F:\\data\\db1"})
+	SR1tree, _ := merkle.NewTree(merkle.Config{database, 256, 100,
+		merkle.HashFunctionPoseidon})
 	defer database.Close() //nolint:errcheck
 
-	Balance := make(map[int]int, 100000)
-	tx := Turbo.Tx{
+	database2, err := badgerdb.New(db.Options{Path:"F:\\data\\db2"})
+	if err != nil{
+		log.Println(err)
+	}
+	defer database2.Close() //nolint:errcheck
+
+	SR2tree, _ := merkle.NewTree(merkle.Config{database2, 256, 100,
+		merkle.HashFunctionPoseidon})
+
+	Balance := make(map[int]int, nodeNum)
+	tx := TURBO.Tx{
 		Id:       1,
 		Sender:   1,
 		Receiver: 2,
 		Amount:   1,
 	}
 	txbyte, _ := Utils.Encode(tx)
-	SRL := make([][]byte, 100000+1)
-	balanceByte := make([][]byte, 100000)
-	key :=make([][]byte, 100000)
+	SRL := make([][]byte, numTx+1)
+	balanceByte := make([][]byte, nodeNum)
+	keyByte :=make([][]byte,nodeNum)
 	for i, balance := range Balance {
 		balance = 1000000
 		balancebyte, _ := Utils.Encode(balance)
 		balanceByte[i] = balancebyte
-		key[i], _ =Utils.Encode(i)
-		invalids, err := tree.AddBatch(key, balanceByte)
-		c.Assert(err, qt.IsNil)
-		c.Assert(err, qt.IsNil)
-		c.Check(len(invalids), qt.Equals, 0)
-		root, _ :=tree.Root()
-		fmt.Printf("%x",root)
-		ISRL := make([][]byte, numTx)
-		for i := 0; i < numTx-1; i++ {
-			IS := sha256.New()
-			IS.Write(SRL[i])
-			IS.Sum(SRL[i+1])
-			ISByte := IS.Sum(txbyte)
-			ISRL[i] = ISByte //添加过程根
-		}
-		ISRtree, _ := merkletree.New(ISRL)
-		ISRtree.Root()
-
-
-
+		keyByte[i],_ = Utils.Encode(i)
 	}
+	SR1tree.AddBatch(keyByte,balanceByte)
+	SR1, _ := SR1tree.Root()
+	SRL[0] = SR1
+	for i := 0; i < numTx; i++ {
+		Balance[1] += tx.Amount
+		balancebyte, _ := Utils.Encode(Balance[1])
+		balanceByte[1] = balancebyte
+		Balance[2] += tx.Amount
+		balancebyte, _ = Utils.Encode(Balance[2])
+		balanceByte[2] = balancebyte
+		SR2tree.AddBatch(keyByte,balanceByte)
+		SR2, _ := SR2tree.Root()
+		SRL[i] = SR2
+	}
+	database3, _ := badgerdb.New(db.Options{Path:"F:\\data\\db3"})
+	ISRtree, _ := merkle.NewTree(merkle.Config{database3, 256, 100,
+		merkle.HashFunctionPoseidon})
+	defer database3.Close() //nolint:errcheck
 
-
-
-
+	ISRKey := make([][]byte, numTx)
+	ISRL := make([][]byte, numTx)
+	for i := 0; i < numTx-1; i++ {
+		IS := sha256.New()
+		IS.Write(SRL[i])
+		IS.Sum(SRL[i+1])
+		ISByte := IS.Sum(txbyte)
+		ISRL[i] = ISByte //添加过程根
+	}
+	_, err = ISRtree.AddBatch(ISRKey, ISRL)
+	if err !=nil{
+		log.Printf("err:%v",err)
+	}
+	ISRROOT,_:=ISRtree.Root()
+	fmt.Printf("%x",ISRROOT)
 }
-*/
+
+
+

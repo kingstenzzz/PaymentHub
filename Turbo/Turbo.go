@@ -1,4 +1,4 @@
-package Turbo
+package TURBO
 
 import (
 	"context"
@@ -15,6 +15,7 @@ import (
 	"math/rand"
 	"os"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -341,7 +342,7 @@ func calculateNextState(state State, txSet []Tx, enrollmentSet map[int]int, with
 	SRL := make([][]byte, finishedTask+1)
 	balanceByte := make([][]byte, numNode)
 	txSetByte := make([][]byte, finishedTask)
-
+	BatchBalanceByte := make([][][]byte, finishedTask)
 	for i, balance := range newState.Balance {
 		balancebyte, _ := Utils.Encode(balance)
 		balanceByte[i] = balancebyte
@@ -384,12 +385,31 @@ func calculateNextState(state State, txSet []Tx, enrollmentSet map[int]int, with
 				balanceByte[i] =balancebyte
 			}
 		*/
-
-		SR2tree, _ := merkletree.New(balanceByte)
-		SR2 := SR2tree.Root()
-		SRL[i] = SR2
+		BatchBalanceByte[i] = balanceByte
 
 	}
+
+	var wg sync.WaitGroup //定义一个同步等待的组
+
+	cpuNum := 24
+	fmt.Printf("cpu:%v", cpuNum)
+
+	for i := 1; i < cpuNum; i++ {
+		wg.Add(1)
+		go func() {
+			for j := (finishedTask * (i - 1) / cpuNum) + 1; j < finishedTask*(i/cpuNum); j++ {
+				SR2tree, _ := merkletree.New(BatchBalanceByte[j])
+				SR2 := SR2tree.Root()
+				SRL[j] = SR2
+			}
+			wg.Done()
+
+		}()
+
+	}
+
+	wg.Wait() //阻塞直到所有任务完成
+	fmt.Println("over\n")
 	ISRL := make([][]byte, finishedTask)
 	for i := 0; i < finishedTask-1; i++ {
 		IS := sha256.New()
@@ -748,7 +768,7 @@ func Run(n, e, v int) int {
 		}
 		fmt.Printf("\ntps: %d\n", int(float64(finishedTask)/float64(time.Since(startTime).Seconds())))
 	}
-	fmt.Printf("atps=%d,acd=%v, epochTime=%v,calculateDuration:%v,tradingPhaseDuration:%v\n",
-		tps, float64(consensDuration)/math.Pow(10, 10), epochTime, stat.calculateDuration, stat.tradingPhaseDuration)
+	fmt.Printf("atps=%d acd=%v epochTime=%v calculateDuration:%v tradingPhaseDuration:%v\n",
+		tps/10, float64(consensDuration)/math.Pow(10, 10), epochTime, stat.calculateDuration, stat.tradingPhaseDuration)
 	return tps / 10
 }

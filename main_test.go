@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	_ "github.com/kingstenzzz/PaymentHub/Nocust"
+	"github.com/kingstenzzz/PaymentHub/Nocust"
 	"github.com/kingstenzzz/PaymentHub/PayHub"
-	"github.com/kingstenzzz/PaymentHub/Turbo"
+	"github.com/kingstenzzz/PaymentHub/TURBO"
 	"os"
 	"strconv"
 	"testing"
@@ -18,7 +18,7 @@ func TestNocust(t *testing.T) {
 	for _, e := range epochtime {
 		for _, n := range node {
 			fmt.Printf("node:%v,epoch:%v\n", n, e)
-			nocust.Run(n, e)
+			Nocust.Run(n, e)
 			output := fmt.Sprintf("node:%v,epoch:%v\n", n, e)
 			f, err := os.OpenFile("./TestNocust", os.O_WRONLY|os.O_TRUNC, 0600)
 			defer f.Close()
@@ -62,7 +62,7 @@ func TestTurbo(t *testing.T) {
 			//n:=50
 			fmt.Printf("node:%v,epoch:%v\n", n, e)
 			t.Run("node"+strconv.Itoa(n)+",epoch"+strconv.Itoa(e), func(t *testing.T) {
-				tps := TURBO.Run(n, e)
+				tps := TURBO.Run(n, e, n)
 				time.Sleep(time.Duration(30000) * time.Millisecond)
 				fmt.Printf("node:%v,epoch:%v,tps%v\n", n, e, tps)
 				output := fmt.Sprintf("node:%v,epoch:%v,tps%v\n", n, e, tps)

@@ -1,16 +1,14 @@
 package main
 
 import (
-	"github.com/kingstenzzz/PaymentHub/Nocust"
-	"github.com/kingstenzzz/PaymentHub/PayHub"
-	turbo "github.com/kingstenzzz/PaymentHub/Turbo"
-	"runtime"
-
 	_ "crypto/sha256"
 	_ "encoding/hex"
 	"flag"
 	"fmt"
 	_ "github.com/ethereum/go-ethereum/crypto"
+	"github.com/kingstenzzz/PaymentHub/Nocust"
+	"github.com/kingstenzzz/PaymentHub/PayHub"
+	"github.com/kingstenzzz/PaymentHub/TURBO"
 	_ "net/http/pprof"
 )
 
@@ -20,16 +18,15 @@ var vNode int
 var protocol string
 
 func init() {
-	flag.IntVar(&numNode, "n", 10, "number of nodes")
-	flag.IntVar(&epoch, "e", 60, "epoch in seconds")
-	flag.IntVar(&vNode, "v", 20, "number of v")
-
+	flag.IntVar(&numNode, "n", 1000, "number of nodes")
+	flag.IntVar(&epoch, "e", 10, "epoch in seconds")
+	flag.IntVar(&vNode, "vs", 10, "number of v")
 	flag.StringVar(&protocol, "p", "n", "protocol")
 	flag.Parse()
 }
 
 func main() {
-	runtime.GOMAXPROCS(7)
+	//runtime.GOMAXPROCS(7)
 
 	//go func() {
 	//	http.ListenAndServe("localhost:6060", nil)
@@ -40,7 +37,7 @@ func main() {
 	fmt.Println("")
 
 	if protocol == "t" {
-		turbo.Run(numNode, epoch, vNode)
+		TURBO.Run(numNode, epoch, vNode)
 	} else if protocol == "n" {
 		Nocust.Run(numNode, epoch)
 	} else if protocol == "g" {

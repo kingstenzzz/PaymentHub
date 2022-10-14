@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"PaymentHub/Utils"
+	"github.com/kingstenzzz/PaymentHub/Utils"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -67,7 +67,6 @@ func (oc *OperatorServer) cleanUp() {
 		<-oc.receiptChan
 	}
 	oc.txCounter = 0
-	
 }
 
 func (oc *OperatorServer) Run() {

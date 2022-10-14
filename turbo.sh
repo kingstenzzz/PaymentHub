@@ -1,11 +1,11 @@
 #!/bin/bash
 
-for n in  10 50 100 200 600;
+for n in 100;
 do
-    for e in 5 10 30 600;
+    for e in  60;
     do
+        echo n=$n e=$e>>./TestTurbo.txt
+        ./main -n $n -e $e| grep atps>>./TestTurbo.txt
         echo
-        echo "Trubo" n=$n e=$e>>./TestTurbo.txt
-        ./main -n $n -e $e -p t | grep atps>>./TestTurbo.txt;
     done
 done

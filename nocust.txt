@@ -18,3 +18,47 @@ n=600 e=5 atps 9224
 n=600 e=10 atps 9609
 n=600 e=30 atps 9862
 n=600 e=60 atps 9902
+n=1200 e=5 atps 1830
+n=1200 e=10 atps 1916
+n=1200 e=30 atps 1971
+n=1200 e=60 atps 1984
+n=2000 e=5 atps 2777
+n=2000 e=10 atps 3176
+n=2000 e=30 atps 3280
+n=2000 e=60 atps 3307
+n=1200 e=5 atps 1830
+n=1200 e=10 atps 1916
+n=1200 e=30 atps 1971
+n=1200 e=60 atps 1984
+n=600 e=5
+n=600 e=10
+n=600 e=30
+n=600 e=60
+n=600 e=5
+atps 921
+n=600 e=10
+atps 961
+n=600 e=30
+atps 984
+n=600 e=60
+atps 991
+n=2000 e=5
+atps 3019
+n=2000 e=10
+atps 3177
+n=2000 e=30
+atps 3279
+n=2000 e=60
+atps 3306
+n=4000 e=5
+atps 5757
+n=4000 e=10
+atps 6207
+n=4000 e=30
+atps 6531
+n=4000 e=60
+atps 6602
+n=6000 e=5
+atps 8309
+n=6000 e=10
+n=6000 e=30

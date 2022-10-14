@@ -38,13 +38,3 @@ Trubo n=200 e=60
 atps=44719,acd=83.9541604921, epochTime=137.066016887,calculateDuration:1m16.753387421s,tradingPhaseDuration:59.980288754s
 Trubo n=600 e=60
 atps=18504,acd=279.8730244585, epochTime=314.982336986,calculateDuration:4m14.624524131s,tradingPhaseDuration:59.982652839s
-n=10 e=60
-n=50 e=60
-n=100 e=60
-n=200 e=60
-n=600 e=60
-n=10 e=60
-n=50 e=60
-n=100 e=60
-n=200 e=60
-n=600 e=60

@@ -1,5 +1,27 @@
-node:20,epoch:5,tps6815
-node:20,epoch:10,tps7086
-node:20,epoch:30,tps7378
-node:20,epoch:5,tps6737
-node:20,epoch:10,tps7158
+atps=8541 acd=0.8255218723 epochTime=5.768578515 calculateDuration:446.194189ms tradingPhaseDuration:4.998862725s
+atps=9059 acd=-9.22337202555503e+08 epochTime=11.290822045 calculateDuration:937.607325ms tradingPhaseDuration:9.996613052s
+atps=9364 acd=3.5491323008 epochTime=33.157761541 calculateDuration:2.840523507s tradingPhaseDuration:29.989804816s
+atps=9381 acd=6.8807215812 epochTime=66.19880074 calculateDuration:5.86832911s tradingPhaseDuration:59.978858948s
+atps=8645 acd=0.884257929 epochTime=5.802905604 calculateDuration:501.614373ms tradingPhaseDuration:4.998173933s
+atps=9091 acd=1.4814993545 epochTime=11.39217712 calculateDuration:1.054433035s tradingPhaseDuration:9.997290774s
+atps=9381 acd=4.0142915888 epochTime=33.709888597 calculateDuration:3.379653319s tradingPhaseDuration:29.989722167s
+atps=9385 acd=8.0733016685 epochTime=66.640650257 calculateDuration:6.326120395s tradingPhaseDuration:59.979034868s
+atps=8205 acd=1.1588601426 epochTime=6.118337768 calculateDuration:803.065548ms tradingPhaseDuration:4.998322743s
+atps=8675 acd=2.0291207353 epochTime=12.025853137 calculateDuration:1.727818935s tradingPhaseDuration:9.997880577s
+atps=8833 acd=6.1404576021 epochTime=34.616603043 calculateDuration:4.304259028s tradingPhaseDuration:29.989891306s
+atps=8759 acd=12.5993962968 epochTime=69.741824236 calculateDuration:9.420918864s tradingPhaseDuration:59.979894386s
+atps=7029 acd=1.9594237624 epochTime=6.736045482 calculateDuration:1.417272208s tradingPhaseDuration:4.998671965s
+atps=7399 acd=3.7407990769 epochTime=13.635905313 calculateDuration:3.30074126s tradingPhaseDuration:9.997164445s
+atps=7497 acd=11.4686035502 epochTime=41.322148139 calculateDuration:10.985200467s tradingPhaseDuration:29.991623169s
+atps=7427 acd=23.5948329788 epochTime=81.256008621 calculateDuration:20.915623609s tradingPhaseDuration:59.98420606s
+atps=5983 acd=3.0273862385 epochTime=7.673618213 calculateDuration:2.311901419s tradingPhaseDuration:4.998671538s
+atps=6275 acd=-9.223371988178204e+08 epochTime=15.742682051 calculateDuration:5.37112513s tradingPhaseDuration:9.99715417s
+atps=6233 acd=19.0718181433 epochTime=47.15968589 calculateDuration:16.801626563s tradingPhaseDuration:29.991318302s
+atps=6144 acd=40.0224167785 epochTime=97.362447595 calculateDuration:37.021673702s tradingPhaseDuration:59.984154885s
+atps=5709 acd=3.8169014085 epochTime=8.675723183 calculateDuration:3.161948908s tradingPhaseDuration:4.998348988s
+atps=5900 acd=7.2246078883 epochTime=16.358245762 calculateDuration:5.958478586s tradingPhaseDuration:9.997109412s
+atps=5954 acd=22.4809646106 epochTime=47.135434993 calculateDuration:16.771391843s tradingPhaseDuration:29.991176694s
+atps=5632 acd=51.9808978691 epochTime=105.944295358 calculateDuration:45.585290277s tradingPhaseDuration:59.917510868s
+n=10 e=120
+n=10 e=240
+n=50 e=120
