@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/kingstenzzz/PaymentHub/Nocust"
 	"github.com/kingstenzzz/PaymentHub/PayHub"
-	"github.com/kingstenzzz/PaymentHub/Turbo"
+	turbo "github.com/kingstenzzz/PaymentHub/Turbo"
 	"runtime"
 
 	_ "crypto/sha256"
@@ -40,7 +40,7 @@ func main() {
 	fmt.Println("")
 
 	if protocol == "t" {
-		TURBO.Run(numNode, epoch, vNode)
+		turbo.Run(numNode, epoch, vNode)
 	} else if protocol == "n" {
 		Nocust.Run(numNode, epoch)
 	} else if protocol == "g" {

@@ -1,3 +1,3 @@
-module github.com/kingstenzzz/PaymentHub
+module PaymentHub
 
 go 1.16
