@@ -1,10 +1,10 @@
 package main
 
 import (
-	"./Nocust"
-	"./PayHub"
-	"./TURBO"
 	"fmt"
+	_ "github.com/kingstenzzz/PaymentHub/Nocust"
+	"github.com/kingstenzzz/PaymentHub/PayHub"
+	"github.com/kingstenzzz/PaymentHub/Turbo"
 	"os"
 	"strconv"
 	"testing"

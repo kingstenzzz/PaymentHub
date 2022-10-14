@@ -1,4 +1,4 @@
-package TURBO
+package Turbo
 
 import (
 	"context"
@@ -474,7 +474,7 @@ func (node *userNode) leaderCron(ctx context.Context) {
 				stat.txDuration += tx.duration.Milliseconds()
 				node.leader.txSet = append(node.leader.txSet, tx)
 			} else {
-				fmt.Printf("leader %v phase %v, discarding tx from Epoch %v\n", node.id, node.state.Epoch, tx.Epoch)//不是这轮的交易
+				fmt.Printf("leader %v phase %v, discarding tx from Epoch %v\n", node.id, node.state.Epoch, tx.Epoch) //不是这轮的交易
 			}
 		}
 	}
@@ -489,10 +489,10 @@ func (node *userNode) leaderConsensusPhase() {
 		<-node.txLeaderChan
 	}
 	if node.leader.txSet != nil {
-		calculiStetTime :=time.Now()
+		calculiStetTime := time.Now()
 		newState := calculateNextState(node.state, node.leader.txSet,
 			node.leader.enrollmentSet, node.leader.withdrawalSet)
-		stat.calculateDuration=  time.Since(calculiStetTime)
+		stat.calculateDuration = time.Since(calculiStetTime)
 		newState.Sig[node.id] = node.sign(newState.Balance)
 		newState.LeaderAddr = node.pubAddr
 		//printState(newState)
@@ -686,7 +686,7 @@ func createNode(id int, balance int, validator bool) *userNode {
 	}
 }
 
-func Run(n, e ,v int) int {
+func Run(n, e, v int) int {
 	fmt.Println("Turbo...")
 
 	numNode = n
@@ -696,7 +696,7 @@ func Run(n, e ,v int) int {
 	tpsPerNode := targetTPS / numNode
 	tps := 0
 	confNum = v
-	var  consensDuration time.Duration = time.Nanosecond
+	var consensDuration time.Duration = time.Nanosecond
 	var epochTime float64
 	makeTaskChan = make(chan struct{}, 1)
 	nodesMap = make(map[int]*userNode)
@@ -741,14 +741,14 @@ func Run(n, e ,v int) int {
 		if i >= 1 {
 			tps += currentTps
 		}
-		if i >=1{
-			fmt.Println("consensusPhaseDuration：",stat.consensusPhaseDuration)
+		if i >= 1 {
+			fmt.Println("consensusPhaseDuration：", stat.consensusPhaseDuration)
 			consensDuration += stat.consensusPhaseDuration
 
 		}
 		fmt.Printf("\ntps: %d\n", int(float64(finishedTask)/float64(time.Since(startTime).Seconds())))
 	}
 	fmt.Printf("atps=%d,acd=%v, epochTime=%v,calculateDuration:%v,tradingPhaseDuration:%v\n",
-		tps,float64(consensDuration)/math.Pow(10,10),epochTime,stat.calculateDuration,stat.tradingPhaseDuration)
+		tps, float64(consensDuration)/math.Pow(10, 10), epochTime, stat.calculateDuration, stat.tradingPhaseDuration)
 	return tps / 10
 }

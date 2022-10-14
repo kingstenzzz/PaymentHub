@@ -1,23 +1,20 @@
 package main
 
 import (
-	"./TURBO"
-	"./Utils"
+	"/github.com/kingstenzzz/PaymentHub/Turbo"
 	"bytes"
 	"crypto/sha256"
 	_ "crypto/sha256"
 	"encoding/gob"
 	"fmt"
+	"github.com/kingstenzzz/PaymentHub/Utils"
+	merkletree "github.com/wealdtech/go-merkletree"
 	"strconv"
 	"testing"
-	merkletree "github.com/wealdtech/go-merkletree"
-
-
-
 )
 
-var txNum = []int{/*100, 1000, 10000,*/ 1}
-var nodeNum = []int{/*20, 50, 100, 150,*/ 300}
+var txNum = []int{ /*100, 1000, 10000,*/ 1}
+var nodeNum = []int{ /*20, 50, 100, 150,*/ 300}
 
 func Encode(data interface{}) ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
@@ -156,7 +153,7 @@ func TestMerkle(t *testing.T) {
 	defer database.Close() //nolint:errcheck
 
 	Balance := make(map[int]int, 100000)
-	tx := TURBO.Tx{
+	tx := Turbo.Tx{
 		Id:       1,
 		Sender:   1,
 		Receiver: 2,
@@ -197,13 +194,3 @@ func TestMerkle(t *testing.T) {
 
 }
 */
-
-
-
-
-
-
-
-
-
-

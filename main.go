@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/kingstenzzz/PaymentHub/Nocust"
 	"github.com/kingstenzzz/PaymentHub/PayHub"
-	"github.com/kingstenzzz/PaymentHub/TURBO"
+	"github.com/kingstenzzz/PaymentHub/Turbo"
 	"runtime"
 
 	_ "crypto/sha256"
